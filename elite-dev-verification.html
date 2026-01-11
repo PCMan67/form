@@ -1,0 +1,942 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Elite Frontend Developers | Verification Portal</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #12121a;
+            --bg-tertiary: #1a1a25;
+            --accent-primary: #5865f2;
+            --accent-secondary: #7289da;
+            --accent-glow: rgba(88, 101, 242, 0.3);
+            --text-primary: #ffffff;
+            --text-secondary: #b9bbbe;
+            --text-muted: #72767d;
+            --success: #3ba55c;
+            --error: #ed4245;
+            --warning: #faa61a;
+            --border: #2f3136;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .matrix-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            opacity: 0.03;
+            z-index: 0;
+            background: 
+                repeating-linear-gradient(
+                    0deg,
+                    transparent,
+                    transparent 2px,
+                    var(--accent-primary) 2px,
+                    var(--accent-primary) 4px
+                );
+            animation: scanline 8s linear infinite;
+        }
+
+        @keyframes scanline {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(100px); }
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        .logo {
+            display: inline-flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .logo-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            box-shadow: 0 8px 32px var(--accent-glow);
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--text-primary), var(--accent-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            margin-top: 10px;
+        }
+
+        .warning-banner {
+            background: linear-gradient(135deg, rgba(250, 166, 26, 0.1), rgba(237, 66, 69, 0.1));
+            border: 1px solid var(--warning);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 40px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .warning-banner span {
+            font-size: 24px;
+        }
+
+        .warning-text {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        .warning-text strong {
+            color: var(--warning);
+        }
+
+        .form-container {
+            background: var(--bg-secondary);
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            overflow: hidden;
+        }
+
+        .form-header {
+            background: var(--bg-tertiary);
+            padding: 25px 30px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .form-header h2 {
+            font-size: 1.3rem;
+            margin-bottom: 5px;
+        }
+
+        .form-header p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .questions-container {
+            padding: 30px;
+        }
+
+        .question {
+            margin-bottom: 35px;
+            padding-bottom: 35px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .question:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+
+        .question-header {
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .question-number {
+            background: var(--accent-primary);
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.9rem;
+            flex-shrink: 0;
+        }
+
+        .question-number.special {
+            background: linear-gradient(135deg, #ffd700, #ff6b00);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.4); }
+            50% { box-shadow: 0 0 20px 5px rgba(255, 215, 0, 0.2); }
+        }
+
+        .question-text {
+            font-size: 1.05rem;
+            line-height: 1.5;
+            color: var(--text-primary);
+        }
+
+        .question-hint {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            margin-top: 5px;
+            font-style: italic;
+        }
+
+        .answer-input {
+            width: 100%;
+            background: var(--bg-primary);
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            padding: 15px 18px;
+            color: var(--text-primary);
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        .answer-input:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 4px var(--accent-glow);
+        }
+
+        .answer-input::placeholder {
+            color: var(--text-muted);
+        }
+
+        textarea.answer-input {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .code-input {
+            font-family: 'Fira Code', 'Consolas', monospace;
+            font-size: 0.95rem;
+        }
+
+        .submit-section {
+            padding: 30px;
+            background: var(--bg-tertiary);
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .submit-info {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .submit-btn {
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px var(--accent-glow);
+        }
+
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+
+        /* Results Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: var(--bg-secondary);
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            max-width: 600px;
+            width: 100%;
+            max-height: 80vh;
+            overflow: hidden;
+            animation: modalSlide 0.3s ease;
+        }
+
+        @keyframes modalSlide {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-header {
+            padding: 25px 30px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .modal-header h3 {
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 24px;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .close-btn:hover {
+            color: var(--text-primary);
+        }
+
+        .modal-body {
+            padding: 30px;
+            max-height: 60vh;
+            overflow-y: auto;
+        }
+
+        .result-item {
+            background: var(--bg-primary);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .result-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .result-question {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            margin-bottom: 8px;
+        }
+
+        .result-answer {
+            color: var(--text-primary);
+            font-family: 'Fira Code', monospace;
+            word-break: break-all;
+        }
+
+        .result-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+
+        .result-status.correct {
+            background: rgba(59, 165, 92, 0.2);
+            color: var(--success);
+        }
+
+        .result-status.incorrect {
+            background: rgba(237, 66, 69, 0.2);
+            color: var(--error);
+        }
+
+        .score-display {
+            text-align: center;
+            padding: 30px;
+            background: var(--bg-tertiary);
+        }
+
+        .score-number {
+            font-size: 4rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--success), var(--accent-primary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .score-label {
+            color: var(--text-muted);
+            margin-top: 5px;
+        }
+
+        .elite-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: linear-gradient(135deg, #ffd700, #ff6b00);
+            color: #000;
+            padding: 10px 20px;
+            border-radius: 30px;
+            font-weight: 700;
+            margin-top: 20px;
+            animation: shine 2s infinite;
+        }
+
+        @keyframes shine {
+            0%, 100% { filter: brightness(1); }
+            50% { filter: brightness(1.2); }
+        }
+
+        /* Admin Panel */
+        .admin-panel {
+            display: none;
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.1), rgba(255, 107, 0, 0.1));
+            border: 2px solid #ffd700;
+            border-radius: 12px;
+            padding: 25px;
+            margin-top: 40px;
+        }
+
+        .admin-panel.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .admin-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            color: #ffd700;
+        }
+
+        .admin-header h3 {
+            font-size: 1.2rem;
+        }
+
+        .all-responses {
+            background: var(--bg-primary);
+            border-radius: 10px;
+            padding: 20px;
+        }
+
+        .response-row {
+            display: grid;
+            grid-template-columns: 40px 1fr;
+            gap: 15px;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .response-row:last-child {
+            border-bottom: none;
+        }
+
+        .response-num {
+            color: var(--accent-secondary);
+            font-weight: 700;
+        }
+
+        .response-text {
+            color: var(--text-secondary);
+            word-break: break-all;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.9rem;
+        }
+
+        footer {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        footer a {
+            color: var(--accent-secondary);
+            text-decoration: none;
+        }
+
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 1.8rem;
+            }
+
+            .container {
+                padding: 20px 15px;
+            }
+
+            .questions-container {
+                padding: 20px;
+            }
+
+            .submit-section {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .submit-btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="matrix-bg"></div>
+    
+    <div class="container">
+        <header>
+            <div class="logo">
+                <div class="logo-icon">⚡</div>
+                <h1>ELITE::DEV</h1>
+            </div>
+            <p class="subtitle">Frontend Masters Verification Portal</p>
+        </header>
+
+        <div class="warning-banner">
+            <span>⚠️</span>
+            <div class="warning-text">
+                <strong>This verification is for experienced developers only.</strong><br>
+                Answer all 10 questions correctly to gain access. One wrong answer and you're out.
+                <!-- For those who know where to look: The key unlocks everything -->
+            </div>
+        </div>
+
+        <div class="form-container">
+            <div class="form-header">
+                <h2>🔐 Verification Questions</h2>
+                <p>Prove your expertise to join the elite</p>
+            </div>
+
+            <form id="verificationForm" class="questions-container">
+                <!-- Question 1 -->
+                <div class="question">
+                    <div class="question-header">
+                        <div class="question-number">1</div>
+                        <div>
+                            <div class="question-text">What CSS property creates a stacking context AND enables GPU acceleration for transforms?</div>
+                            <div class="question-hint">Think about what browsers actually do under the hood</div>
+                        </div>
+                    </div>
+                    <input type="text" class="answer-input" id="q1" placeholder="Enter property name..." autocomplete="off">
+                </div>
+
+                <!-- Question 2 -->
+                <div class="question">
+                    <div class="question-header">
+                        <div class="question-number">2</div>
+                        <div>
+                            <div class="question-text">In the event loop, what queue has higher priority: microtasks or macrotasks?</div>
+                            <div class="question-hint">Promise.then() vs setTimeout()</div>
+                        </div>
+                    </div>
+                    <input type="text" class="answer-input" id="q2" placeholder="Enter your answer..." autocomplete="off">
+                </div>
+
+                <!-- Question 3 -->
+                <div class="question">
+                    <div class="question-header">
+                        <div class="question-number">3</div>
+                        <div>
+                            <div class="question-text">What is the MIME type for JSON data?</div>
+                            <div class="question-hint">Used in Content-Type headers</div>
+                        </div>
+                    </div>
+                    <input type="text" class="answer-input code-input" id="q3" placeholder="application/..." autocomplete="off">
+                </div>
+
+                <!-- Question 4 -->
+                <div class="question">
+                    <div class="question-header">
+                        <div class="question-number">4</div>
+                        <div>
+                            <div class="question-text">What does CORS stand for?</div>
+                            <div class="question-hint">The bane of every frontend developer's existence</div>
+                        </div>
+                    </div>
+                    <input type="text" class="answer-input" id="q4" placeholder="Full expansion..." autocomplete="off">
+                </div>
+
+                <!-- Question 5 - THE KEY QUESTION -->
+                <div class="question">
+                    <div class="question-header">
+                        <div class="question-number special">5</div>
+                        <div>
+                            <div class="question-text">What is the secret passphrase that grants admin access?</div>
+                            <div class="question-hint">Elite developers know to inspect what others cannot see</div>
+                        </div>
+                    </div>
+                    <input type="text" class="answer-input code-input" id="q5" placeholder="Enter the key..." autocomplete="off" data-gate="true">
+                </div>
+
+                <!-- Question 6 -->
+                <div class="question">
+                    <div class="question-header">
+                        <div class="question-number">6</div>
+                        <div>
+                            <div class="question-text">In XML, what character sequence starts a CDATA section?</div>
+                            <div class="question-hint">Used to escape special characters in XML content</div>
+                        </div>
+                    </div>
+                    <input type="text" class="answer-input code-input" id="q6" placeholder="<![..." autocomplete="off">
+                </div>
+
+                <!-- Question 7 -->
+                <div class="question">
+                    <div class="question-header">
+                        <div class="question-number">7</div>
+                        <div>
+                            <div class="question-text">What HTML attribute prevents FOUC (Flash of Unstyled Content) on custom elements?</div>
+                            <div class="question-hint">Used with web components before they're defined</div>
+                        </div>
+                    </div>
+                    <input type="text" class="answer-input code-input" id="q7" placeholder="Attribute name..." autocomplete="off">
+                </div>
+
+                <!-- Question 8 -->
+                <div class="question">
+                    <div class="question-header">
+                        <div class="question-number">8</div>
+                        <div>
+                            <div class="question-text">What bundler configuration option enables "tree shaking"?</div>
+                            <div class="question-hint">Webpack/Rollup - removing unused exports</div>
+                        </div>
+                    </div>
+                    <input type="text" class="answer-input code-input" id="q8" placeholder="Configuration key or flag..." autocomplete="off">
+                </div>
+
+                <!-- Question 9 -->
+                <div class="question">
+                    <div class="question-header">
+                        <div class="question-number">9</div>
+                        <div>
+                            <div class="question-text">What JavaScript method converts a JSON string to an object?</div>
+                            <div class="question-hint">The inverse of JSON.stringify()</div>
+                        </div>
+                    </div>
+                    <input type="text" class="answer-input code-input" id="q9" placeholder="JSON...." autocomplete="off">
+                </div>
+
+                <!-- Question 10 -->
+                <div class="question">
+                    <div class="question-header">
+                        <div class="question-number">10</div>
+                        <div>
+                            <div class="question-text">What is the CSS-in-JS runtime cost mitigation strategy that extracts styles at build time?</div>
+                            <div class="question-hint">Zero-runtime CSS-in-JS approach</div>
+                        </div>
+                    </div>
+                    <input type="text" class="answer-input" id="q10" placeholder="Strategy or tool name..." autocomplete="off">
+                </div>
+            </form>
+
+            <div class="submit-section">
+                <div class="submit-info">
+                    All questions are case-insensitive
+                </div>
+                <button type="button" class="submit-btn" onclick="submitVerification()">
+                    <span>⚡</span>
+                    Verify Identity
+                </button>
+            </div>
+        </div>
+
+        <!-- Admin Panel (Hidden until key is entered) -->
+        <div class="admin-panel" id="adminPanel">
+            <div class="admin-header">
+                <span>🔓</span>
+                <h3>ADMIN ACCESS GRANTED - All Responses Visible</h3>
+            </div>
+            <div class="all-responses" id="allResponses">
+                <!-- Populated by JavaScript -->
+            </div>
+        </div>
+
+        <footer>
+            <p>© 2024 Elite Frontend Developers Guild</p>
+            <p style="margin-top: 10px;">Only the worthy shall pass • <a href="#" onclick="showHint()">Lost?</a></p>
+        </footer>
+    </div>
+
+    <!-- Results Modal -->
+    <div class="modal-overlay" id="resultsModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3><span id="modalIcon">📊</span> <span id="modalTitle">Verification Results</span></h3>
+                <button class="close-btn" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="score-display" id="scoreDisplay">
+                <div class="score-number" id="scoreNumber">0/10</div>
+                <div class="score-label">Questions Correct</div>
+                <div class="elite-badge" id="eliteBadge" style="display: none;">
+                    👑 ELITE STATUS GRANTED
+                </div>
+            </div>
+            <div class="modal-body" id="resultsBody">
+                <!-- Results populated here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /*
+         * ╔═══════════════════════════════════════════════════════════════════╗
+         * ║  ELITE FRONTEND DEVELOPERS VERIFICATION SYSTEM v2.1              ║
+         * ║  ─────────────────────────────────────────────────────────────── ║
+         * ║  Authentication Module                                            ║
+         * ║                                                                   ║
+         * ║  THE KEY: PHANTOM_FLUX_2024                                      ║
+         * ║                                                                   ║
+         * ║  Enter this key in Question 5 to unlock admin panel              ║
+         * ║  and view all submitted responses.                               ║
+         * ╚═══════════════════════════════════════════════════════════════════╝
+         */
+
+        const MASTER_KEY = 'PHANTOM_FLUX_2024';
+        
+        const CORRECT_ANSWERS = {
+            q1: ['will-change', 'transform', 'opacity', 'will-change: transform'],
+            q2: ['microtasks', 'microtask', 'micro'],
+            q3: ['application/json'],
+            q4: ['cross-origin resource sharing', 'cross origin resource sharing'],
+            q5: [MASTER_KEY.toLowerCase()],
+            q6: ['<![cdata[', 'cdata', '<![cdata'],
+            q7: [':not(:defined)', 'hidden', ':defined'],
+            q8: ['sideeffects', 'sideeffects: false', '"sideeffects": false', 'usedexports', 'treeshake'],
+            q9: ['json.parse', 'json.parse()', 'parse'],
+            q10: ['static extraction', 'zero-runtime', 'compile-time extraction', 'linaria', 'vanilla-extract', 'compiled']
+        };
+
+        const QUESTIONS_TEXT = [
+            'CSS property for stacking context + GPU acceleration',
+            'Higher priority queue in event loop',
+            'MIME type for JSON',
+            'CORS full expansion',
+            'Secret passphrase (Admin Key)',
+            'XML CDATA section start sequence',
+            'HTML attribute to prevent FOUC',
+            'Bundler config for tree shaking',
+            'JSON string to object method',
+            'CSS-in-JS build-time extraction strategy'
+        ];
+
+        let submittedAnswers = {};
+
+        // Check for admin key on input
+        document.getElementById('q5').addEventListener('input', function(e) {
+            const value = e.target.value.trim().toUpperCase();
+            if (value === MASTER_KEY) {
+                unlockAdminPanel();
+            } else {
+                document.getElementById('adminPanel').classList.remove('active');
+            }
+        });
+
+        function unlockAdminPanel() {
+            const adminPanel = document.getElementById('adminPanel');
+            adminPanel.classList.add('active');
+            updateAllResponses();
+            
+            // Scroll to admin panel
+            setTimeout(() => {
+                adminPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 100);
+        }
+
+        function updateAllResponses() {
+            const container = document.getElementById('allResponses');
+            let html = '';
+            
+            for (let i = 1; i <= 10; i++) {
+                const input = document.getElementById(`q${i}`);
+                const value = input ? input.value : '';
+                html += `
+                    <div class="response-row">
+                        <div class="response-num">Q${i}</div>
+                        <div class="response-text">${value || '<em style="color: var(--text-muted)">No answer yet</em>'}</div>
+                    </div>
+                `;
+            }
+            
+            container.innerHTML = html;
+        }
+
+        // Update admin panel in real-time
+        document.querySelectorAll('.answer-input').forEach(input => {
+            input.addEventListener('input', () => {
+                if (document.getElementById('adminPanel').classList.contains('active')) {
+                    updateAllResponses();
+                }
+            });
+        });
+
+        function submitVerification() {
+            let score = 0;
+            let results = [];
+            
+            for (let i = 1; i <= 10; i++) {
+                const input = document.getElementById(`q${i}`);
+                const userAnswer = input.value.trim().toLowerCase();
+                const correctAnswers = CORRECT_ANSWERS[`q${i}`];
+                const isCorrect = correctAnswers.some(ans => 
+                    userAnswer.includes(ans.toLowerCase()) || ans.toLowerCase().includes(userAnswer)
+                );
+                
+                if (isCorrect && userAnswer !== '') {
+                    score++;
+                }
+                
+                results.push({
+                    question: QUESTIONS_TEXT[i - 1],
+                    userAnswer: input.value || '(No answer)',
+                    isCorrect: isCorrect && userAnswer !== '',
+                    number: i
+                });
+                
+                submittedAnswers[`q${i}`] = input.value;
+            }
+            
+            showResults(score, results);
+        }
+
+        function showResults(score, results) {
+            const modal = document.getElementById('resultsModal');
+            const scoreNumber = document.getElementById('scoreNumber');
+            const eliteBadge = document.getElementById('eliteBadge');
+            const resultsBody = document.getElementById('resultsBody');
+            const modalIcon = document.getElementById('modalIcon');
+            const modalTitle = document.getElementById('modalTitle');
+            
+            scoreNumber.textContent = `${score}/10`;
+            
+            if (score >= 8) {
+                eliteBadge.style.display = 'inline-flex';
+                modalIcon.textContent = '🏆';
+                modalTitle.textContent = 'Welcome, Elite Developer!';
+                scoreNumber.style.background = 'linear-gradient(135deg, #ffd700, #ff6b00)';
+            } else if (score >= 5) {
+                eliteBadge.style.display = 'none';
+                modalIcon.textContent = '📈';
+                modalTitle.textContent = 'Getting There...';
+                scoreNumber.style.background = 'linear-gradient(135deg, var(--warning), var(--accent-primary))';
+            } else {
+                eliteBadge.style.display = 'none';
+                modalIcon.textContent = '📚';
+                modalTitle.textContent = 'Keep Learning!';
+                scoreNumber.style.background = 'linear-gradient(135deg, var(--error), var(--accent-primary))';
+            }
+            
+            let resultsHTML = '';
+            results.forEach(result => {
+                resultsHTML += `
+                    <div class="result-item">
+                        <div class="result-question">Q${result.number}: ${result.question}</div>
+                        <div class="result-answer">${result.userAnswer}</div>
+                        <div class="result-status ${result.isCorrect ? 'correct' : 'incorrect'}">
+                            ${result.isCorrect ? '✓ Correct' : '✗ Incorrect'}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            resultsBody.innerHTML = resultsHTML;
+            modal.classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('resultsModal').classList.remove('active');
+        }
+
+        function showHint() {
+            alert('Elite developers read between the lines... and within the source. 🔍');
+        }
+
+        // Close modal on overlay click
+        document.getElementById('resultsModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
+
+        // Escape key closes modal
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeModal();
+            }
+        });
+    </script>
+
+    <!-- 
+    ████████████████████████████████████████████████████████████████████████████
+    █                                                                          █
+    █   🔑 THE KEY IS: PHANTOM_FLUX_2024                                       █
+    █                                                                          █
+    █   Enter this in Question 5 to unlock the admin panel                     █
+    █   and see ALL responses in real-time.                                    █
+    █                                                                          █
+    ████████████████████████████████████████████████████████████████████████████
+    -->
+</body>
+</html>
